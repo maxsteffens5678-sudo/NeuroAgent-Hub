@@ -1,0 +1,301 @@
+# ============================================
+# NeuroAgent Hub - Docker Compose
+# Local Development with Ollama AI
+# ============================================
+
+version: '3.9'
+
+services:
+  # ============================================
+  # OLLAMA - Local AI Models
+  # ============================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: neuroagent-ollama
+    
+    # GPU Support (remove if no GPU)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    
+    ports:
+      - "11434:11434"
+    
+    volumes:
+      - ollama_data:/root/.ollama
+    
+    environment:
+      # Optional: Set GPU memory limit
+      OLLAMA_NUM_THREAD: 4
+    
+    # Auto-restart
+    restart: unless-stopped
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    networks:
+      - neuroagent-net
+    
+    # Optional: Pull models on startup
+    # Uncomment to auto-download models
+    # command: serve & sleep 10 && ollama pull mistral && wait
+
+  # ============================================
+  # NeuroAgent Hub - Main Application
+  # ============================================
+  neuroagent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    container_name: neuroagent-hub
+    
+    ports:
+      - "3000:3000"
+    
+    # Environment variables
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      
+      # Ollama Configuration
+      OLLAMA_API_URL: http://ollama:11434
+      OLLAMA_MODEL: mistral
+      OLLAMA_EMBEDDING_MODEL: nomic-embed-text
+      
+      # Learning & Memory
+      ENABLE_LEARNING: "true"
+      ENABLE_MEMORY_PERSISTENCE: "true"
+      MEMORY_FILE_PATH: /app/data/memory.json
+      MAX_MEMORIES: "1000"
+      
+      # Research Configuration
+      RESEARCH_DEPTH: deep
+      MAX_RESEARCH_SOURCES: 5
+      ENABLE_MULTI_SOURCE_RESEARCH: "true"
+      RESEARCH_TIMEOUT: 30000
+      
+      # Agent Configuration
+      ENABLE_RESEARCH_AGENT: "true"
+      ENABLE_CODEGEN_AGENT: "true"
+      ENABLE_OPTIMIZER_AGENT: "true"
+      ENABLE_LEARNER_AGENT: "true"
+      ENABLE_REFLECTOR_AGENT: "true"
+      ENABLE_SELFIMPROVER_AGENT: "true"
+      ENABLE_FEEDBACK_AGENT: "true"
+      
+      # Security
+      CORS_ORIGIN: "http://localhost:3000,http://localhost:3001"
+      ENABLE_RATE_LIMITING: "true"
+      RATE_LIMIT_MAX_REQUESTS: "100"
+      
+      # Logging
+      LOG_LEVEL: debug
+      ENABLE_FILE_LOGGING: "true"
+      LOG_FILE_PATH: /app/logs/app.log
+      
+      # Features
+      FEATURE_PWA_MODE: "true"
+      FEATURE_OFFLINE_MODE: "true"
+      FEATURE_DARK_MODE: "true"
+      
+      # Optional: Load from .env file
+      # env_file:
+      #   - .env
+    
+    # Volumes for persistence
+    volumes:
+      # Application code (development)
+      - .:/app
+      - /app/node_modules
+      
+      # Data persistence
+      - neuroagent_data:/app/data
+      - neuroagent_logs:/app/logs
+      - neuroagent_memory:/app/memory
+    
+    # Dependencies
+    depends_on:
+      ollama:
+        condition: service_healthy
+    
+    # Auto-restart
+    restart: unless-stopped
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    networks:
+      - neuroagent-net
+    
+    # Resource limits (optional)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '2'
+    #       memory: 2G
+    #     reservations:
+    #       cpus: '1'
+    #       memory: 1G
+
+  # ============================================
+  # MONGODB - Optional Data Storage
+  # Uncomment to enable persistent database
+  # ============================================
+  # mongodb:
+  #   image: mongo:7.0-alpine
+  #   container_name: neuroagent-mongodb
+  #   
+  #   ports:
+  #     - "27017:27017"
+  #   
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: admin
+  #     MONGO_INITDB_ROOT_PASSWORD: password123
+  #     MONGO_INITDB_DATABASE: neuroagent
+  #   
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #     - mongodb_config:/data/configdb
+  #   
+  #   restart: unless-stopped
+  #   
+  #   networks:
+  #     - neuroagent-net
+  #   
+  #   healthcheck:
+  #     test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  # ============================================
+  # REDIS - Optional Caching & Session Store
+  # Uncomment to enable caching
+  # ============================================
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: neuroagent-redis
+  #   
+  #   ports:
+  #     - "6379:6379"
+  #   
+  #   volumes:
+  #     - redis_data:/data
+  #   
+  #   command: redis-server --appendonly yes
+  #   
+  #   restart: unless-stopped
+  #   
+  #   networks:
+  #     - neuroagent-net
+  #   
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  # ============================================
+  # NGINX - Optional Reverse Proxy
+  # Uncomment for production setup
+  # ============================================
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: neuroagent-nginx
+  #   
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./ssl:/etc/nginx/ssl:ro
+  #   
+  #   depends_on:
+  #     - neuroagent
+  #   
+  #   networks:
+  #     - neuroagent-net
+
+# ============================================
+# VOLUMES
+# ============================================
+
+volumes:
+  ollama_data:
+    driver: local
+  
+  neuroagent_data:
+    driver: local
+  
+  neuroagent_logs:
+    driver: local
+  
+  neuroagent_memory:
+    driver: local
+  
+  # Uncomment if using optional services
+  # mongodb_data:
+  #   driver: local
+  # 
+  # mongodb_config:
+  #   driver: local
+  # 
+  # redis_data:
+  #   driver: local
+
+# ============================================
+# NETWORKS
+# ============================================
+
+networks:
+  neuroagent-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ============================================
+# USAGE GUIDE
+# ============================================
+
+# Start all services:
+#   docker-compose up -d
+#
+# View logs:
+#   docker-compose logs -f neuroagent
+#
+# Stop services:
+#   docker-compose down
+#
+# Remove data:
+#   docker-compose down -v
+#
+# Scale services:
+#   docker-compose up -d --scale neuroagent=3
+#
+# Check status:
+#   docker-compose ps
+#
+# Execute command in container:
+#   docker-compose exec neuroagent npm start
+#
+# Rebuild image:
+#   docker-compose up -d --build
