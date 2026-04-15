@@ -1,0 +1,390 @@
+# ============================================
+# NeuroAgent Hub - .gitignore
+# What Git should NOT commit
+# ============================================
+
+# ============================================
+# ENVIRONMENT & SECRETS
+# ============================================
+
+# Environment variables (SENSITIVE!)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
+
+# API Keys & Credentials
+*.key
+*.pem
+*.cert
+secrets/
+credentials/
+auth/
+tokens/
+
+# ============================================
+# NODE.JS
+# ============================================
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Lock files (optional - commit if needed for reproducibility)
+# package-lock.json
+# yarn.lock
+
+# Production build
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+.vuepress/dist/
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port/
+
+# ============================================
+# MEMORY & DATA
+# ============================================
+
+# Local memory files
+memory.json
+memory.*.json
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+log.txt
+debug.log
+error.log
+
+# Temporary data
+temp/
+tmp/
+.tmp/
+*.temp
+*.tmp
+
+# ============================================
+# IDE & EDITOR
+# ============================================
+
+# Visual Studio Code
+.vscode/
+.vscode/settings.json
+.vscode/extensions.json
+.vscode/launch.json
+*.code-workspace
+
+# WebStorm
+.idea/
+.idea_modules/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Atom
+.atom/
+.atomrc
+
+# vim
+.vim/
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Others
+*.bak
+*.backup
+*.orig
+.DS_Store
+Thumbs.db
+
+# ============================================
+# TESTING
+# ============================================
+
+# Test coverage
+coverage/
+.coverage
+.nyc_output/
+htmlcov/
+
+# Jest
+.jest/
+jest.config.js
+
+# Mocha
+.mocha/
+
+# Vitest
+.vitest/
+
+# ============================================
+# DOCKER & CONTAINERS
+# ============================================
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+Dockerfile.dev
+docker/local/
+
+# ============================================
+# DEPLOYMENT & CLOUD
+# ============================================
+
+# Heroku
+.env.local
+Procfile.local
+
+# Railway
+.railway/
+railway.json
+
+# Vercel
+.vercel/
+.vercel-build-output/
+
+# AWS
+.aws-credentials
+aws-exports.js
+
+# Google Cloud
+service-account.json
+.gcloud/
+
+# Firebase
+.firebase/
+firebase-debug.log
+
+# ============================================
+# OS FILES
+# ============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+.Trash-*
+.directory
+.mount_*
+
+# ============================================
+# DEPENDENCIES & PACKAGES
+# ============================================
+
+# NPM
+npm-shrinkwrap.json
+package-lock.json (optional)
+
+# Yarn
+yarn.lock (optional)
+
+# PNPM
+pnpm-lock.yaml (optional)
+
+# Bower
+bower_components/
+
+# ============================================
+# BUILD & DIST
+# ============================================
+
+# Build outputs
+*.min.js
+*.min.css
+dist/
+build/
+lib/
+es/
+
+# Webpack
+.webpack/
+webpack-stats.json
+
+# Rollup
+.rollup-cache/
+
+# Parcel
+.cache/
+dist/
+
+# ============================================
+# DOCUMENTATION
+# ============================================
+
+# Generated docs
+docs/generated/
+docs/_build/
+site/
+
+# ============================================
+# MISC
+# ============================================
+
+# OS-generated files
+*.class
+*.o
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+
+# Dependency directories
+node_modules/
+venv/
+ENV/
+env/
+.venv/
+
+# Cache directories
+.cache/
+*.cache
+
+# IDE cache
+.eslintcache
+.stylelintcache
+
+# Git
+.git/
+.github/workflows/secrets.yml
+
+# ============================================
+# PROJECT SPECIFIC
+# ============================================
+
+# NeuroAgent specific
+memory.json
+memory.*.json
+research-cache.json
+code-solutions.json
+
+# API Response Cache
+api-cache/
+*.cache.json
+
+# Local testing files
+test-*.json
+example-*.json
+
+# Development files
+dev-notes.md
+TODO.md
+FIXME.md
+
+# ============================================
+# UPLOADS & GENERATED FILES
+# ============================================
+
+uploads/
+generated/
+assets/generated/
+
+# ============================================
+# OPTIONAL: Specific to your workflow
+# ============================================
+
+# Uncomment if using:
+# database dumps
+# *.sql
+# *.db
+
+# Large files
+# *.zip
+# *.tar.gz
+# *.rar
+
+# Media files (if not needed in repo)
+# *.mp4
+# *.mov
+# *.mp3
+# *.wav
+
+# ============================================
+# SECURITY: CRITICAL FILES
+# ============================================
+
+# NEVER commit:
+*.key
+*.pem
+*.pfx
+*.p12
+private-key*
+secret*
+.credentials
+.aws/
+.ssh/
+.gnupg/
+
+# ============================================
+# ALLOWLIST (opposite of ignore)
+# ============================================
+
+# Exception: DO commit these files
+# (Use ! to negate ignore rules)
+!.env.example
+!.gitkeep
+!.github/
+!.github/workflows/
+!.husky/
+!public/
+!src/
+!tests/
+
+# ============================================
+# COMMENTS
+# ============================================
+
+# This .gitignore file ensures that:
+# 1. Sensitive data (API keys, .env) never gets committed
+# 2. Large generated files aren't tracked
+# 3. Local development files stay private
+# 4. Dependencies are managed through package.json
+# 5. Build artifacts aren't versioned
+#
+# IMPORTANT REMINDERS:
+# - .env must ALWAYS be ignored
+# - API keys should never be in Git
+# - Use .env.example as template instead
+# - Review before committing with: git status
+# - Use git secrets or pre-commit hooks to prevent accidents
