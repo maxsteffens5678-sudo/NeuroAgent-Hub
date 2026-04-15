@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="NeuroAgent Hub - Self-Learning Multi-Agent System">
+    
+    <title>🤖 NeuroAgent Hub</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231a1a2e' width='192' height='192'/><text x='50%' y='50%' font-size='120' fill='%2300d4ff' text-anchor='middle' dominant-baseline='central'>🤖</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00d4ff;
+            --secondary: #ff006e;
+            --dark: #1a1a2e;
+            --darker: #0f0f1e;
+            --light: #e0e0e0;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --error: #ff0055;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            overflow-x: hidden;
+        }
+
+        /* ============ HEADER ============ */
+        .header {
+            background: linear-gradient(90deg, var(--dark) 0%, #2a2a4e 100%);
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--primary);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            color: var(--light);
+            opacity: 0.8;
+        }
+
+        .agent-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .agent-badge {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .agent-badge:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .agent-badge.active::after {
+            content: '●';
+            display: block;
+            color: var(--success);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ============ MAIN CONTAINER ============ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        /* ============ CARDS ============ */
+        .card {
+            background: linear-gradient(135deg, rgba(42, 42, 78, 0.6) 0%, rgba(26, 26, 46, 0.6) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.2);
+        }
+
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .card p {
+            color: rgba(224, 224, 224, 0.8);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        /* ============ INPUT SECTION ============ */
+        .input-section {
+            background: linear-gradient(135deg, rgba(42, 42, 78, 0.8) 0%, rgba(26, 26, 46, 0.8) 100%);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+        }
+
+        .input-section h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(15, 15, 30, 0.8);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 6px;
+            color: var(--light);
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+            background: rgba(15, 15, 30, 0.9);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* ============ BUTTONS ============ */
+        button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(90deg, var(--primary) 0%, #00a8cc 100%);
+            color: var(--darker);
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 212, 255, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: linear-gradient(90deg, var(--secondary) 0%, #cc0055 100%);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        /* ============ OUTPUT SECTION ============ */
+        .output-section {
+            background: linear-gradient(135deg, rgba(42, 42, 78, 0.6) 0%, rgba(26, 26, 46, 0.6) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            min-height: 200px;
+        }
+
+        .output-section h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .output-content {
+            background: rgba(15, 15, 30, 0.5);
+            border-left: 3px solid var(--primary);
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .output-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .output-content::-webkit-scrollbar-track {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .output-content::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        /* ============ MEMORY SECTION ============ */
+        .memory-section {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 212, 255, 0.05) 100%);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .memory-section h3 {
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+
+        .memory-stat {
+            display: inline-block;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            margin-right: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .memory-stat strong {
+            color: var(--success);
+        }
+
+        /* ============ LOADING STATE ============ */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 212, 255, 0.3);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .input-section {
+                padding: 1.5rem;
+            }
+
+            .agent-status {
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            }
+        }
+
+        /* ============ ANIMATIONS ============ */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: slideIn 0.5s ease;
+        }
+
+        .output-section {
+            animation: slideIn 0.5s ease 0.1s both;
+        }
+    </style>
+</head>
+<body>
+    <!-- ============ HEADER ============ -->
+    <header class="header">
+        <h1>🤖 NeuroAgent Hub</h1>
+        <p>Self-Learning Multi-Agent System | Powered by Hybrid Intelligence</p>
+        
+        <div class="agent-status">
+            <div class="agent-badge active">🧠 CodeGen</div>
+            <div class="agent-badge active">🔍 Research</div>
+            <div class="agent-badge active">📈 Optimizer</div>
+            <div class="agent-badge active">📚 Learner</div>
+            <div class="agent-badge active">💭 Reflector</div>
+            <div class="agent-badge active">🔄 SelfImprover</div>
+            <div class="agent-badge active">💬 Feedback</div>
+        </div>
+    </header>
+
+    <!-- ============ MAIN CONTAINER ============ -->
+    <div class="container">
+        <!-- ============ INPUT SECTION ============ -->
+        <div class="input-section">
+            <h2>⚙️ Agent Control Panel</h2>
+            
+            <div class="input-group">
+                <label for="agentType">Wähle einen Agent:</label>
+                <select id="agentType">
+                    <option value="research">🔍 Research Agent - Tiefe Recherche</option>
+                    <option value="code">🧠 CodeGen Agent - Code Generieren</option>
+                    <option value="optimize">📈 Optimizer Agent - Code Optimieren</option>
+                    <option value="learn">📚 Learner Agent - Lernen & Analysieren</option>
+                    <option value="improve">🔄 SelfImprover Agent - System Verbessern</option>
+                    <option value="feedback">💬 Feedback Agent - Persönliche Tipps</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="userInput">Deine Eingabe:</label>
+                <textarea id="userInput" placeholder="Beispiel: Recherchiere tief über Machine Learning oder: Schreib mir einen Python-Code für..."></textarea>
+            </div>
+
+            <div class="button-group">
+                <button onclick="sendRequest()">🚀 Agent starten</button>
+                <button class="secondary" onclick="clearMemory()">🗑️ Memory löschen</button>
+                <button class="secondary" onclick="getMemoryStats()">📊 Statistiken</button>
+            </div>
+        </div>
+
+        <!-- ============ OUTPUT SECTION ============ -->
+        <div class="output-section">
+            <h3>📤 Agent Output</h3>
+            <div id="output" class="output-content">Warte auf Agent-Antwort...</div>
+        </div>
+
+        <!-- ============ MEMORY SECTION ============ -->
+        <div class="memory-section">
+            <h3>🧠 System Memory & Lernfortschritt</h3>
+            <div id="memoryStats">
+                <div class="memory-stat"><strong>Learnings:</strong> <span id="stat-learnings">0</span></div>
+                <div class="memory-stat"><strong>Research:</strong> <span id="stat-research">0</span></div>
+                <div class="memory-stat"><strong>Code Lösungen:</strong> <span id="stat-code">0</span></div>
+                <div class="memory-stat"><strong>Optimierungen:</strong> <span id="stat-improvements">0</span></div>
+            </div>
+        </div>
+
+        <!-- ============ GRID OF AGENT INFO ============ -->
+        <div class="grid" style="margin-top: 3rem;">
+            <div class="card">
+                <h2>🔍 Research Agent</h2>
+                <p>Recherchiert tief in mehreren Quellen (DuckDuckGo, Wikipedia, etc.)</p>
+                <p><strong>Nutzung:</strong> "Recherchiere über [Thema]"</p>
+            </div>
+
+            <div class="card">
+                <h2>🧠 CodeGen Agent</h2>
+                <p>Generiert qualitativ hochwertigen Code basierend auf Anforderungen</p>
+                <p><strong>Nutzung:</strong> "Schreib Code für [Problem]"</p>
+            </div>
+
+            <div class="card">
+                <h2>📈 Optimizer Agent</h2>
+                <p>Optimiert deinen Code für Performance, Lesbarkeit und Skalierbarkeit</p>
+                <p><strong>Nutzung:</strong> Gib deinen Code ein</p>
+            </div>
+
+            <div class="card">
+                <h2>📚 Learner Agent</h2>
+                <p>Analysiert tief und speichert Lernmuster in Memory</p>
+                <p><strong>Nutzung:</strong> "Lerne mich in [Thema]"</p>
+            </div>
+
+            <div class="card">
+                <h2>💭 Reflector Agent</h2>
+                <p>Denkt tiefgründig nach über Prozesse und Verbesserungen</p>
+                <p><strong>Nutzung:</strong> "Reflektiere über [Konzept]"</p>
+            </div>
+
+            <div class="card">
+                <h2>🔄 SelfImprover Agent</h2>
+                <p>Revolutioniert das System basierend auf Lernmustern</p>
+                <p><strong>Nutzung:</strong> "Verbessere dich selbst"</p>
+            </div>
+
+            <div class="card">
+                <h2>💬 Feedback Agent</h2>
+                <p>Gibt dir personalisiertes Feedback für Verbesserung</p>
+                <p><strong>Nutzung:</strong> "Gib mir Feedback"</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ JAVASCRIPT ============ -->
+    <script>
+        // ============ SERVICE WORKER (PWA) ============
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => 
+                console.log('ServiceWorker registration failed:', err)
+            );
+        }
+
+        // ============ API COMMUNICATION ============
+        async function sendRequest() {
+            const agentType = document.getElementById('agentType').value;
+            const userInput = document.getElementById('userInput').value.trim();
+            const outputDiv = document.getElementById('output');
+
+            if (!userInput) {
+                outputDiv.innerHTML = '❌ Bitte gib eine Eingabe ein!';
+                return;
+            }
+
+            outputDiv.innerHTML = '<div class="loading"></div> Agent wird ausgeführt...';
+
+            try {
+                const response = await fetch('/api/agent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: userInput,
+                        type: agentType
+                    })
+                });
+
+                const data = await response.json();
+                displayOutput(data);
+                updateMemoryStats();
+
+            } catch (error) {
+                outputDiv.innerHTML = `❌ Fehler: ${error.message}`;
+            }
+        }
+
+        function displayOutput(data) {
+            const outputDiv = document.getElementById('output');
+            let html = '';
+
+            if (data.error) {
+                html = `❌ Fehler: ${data.error}`;
+            } else {
+                html = `✅ Agent Response:\n\n`;
+                html += JSON.stringify(data, null, 2);
+            }
+
+            outputDiv.innerHTML = html;
+        }
+
+        async function getMemoryStats() {
+            try {
+                const response = await fetch('/api/memory');
+                const memory = await response.json();
+
+                const outputDiv = document.getElementById('output');
+                outputDiv.innerHTML = `📊 System Memory Statistics:\n\n${JSON.stringify(memory, null, 2)}`;
+            } catch (error) {
+                document.getElementById('output').innerHTML = `❌ Fehler: ${error.message}`;
+            }
+        }
+
+        async function clearMemory() {
+            if (confirm('⚠️ Willst du wirklich alle Memory-Daten löschen?')) {
+                try {
+                    const response = await fetch('/api/memory/clear', { method: 'POST' });
+                    const data = await response.json();
+
+                    document.getElementById('output').innerHTML = `✅ ${data.message}`;
+                    updateMemoryStats();
+                } catch (error) {
+                    document.getElementById('output').innerHTML = `❌ Fehler: ${error.message}`;
+                }
+            }
+        }
+
+        async function updateMemoryStats() {
+            try {
+                const response = await fetch('/api/memory');
+                const memory = await response.json();
+
+                document.getElementById('stat-learnings').textContent = memory.learnings.length;
+                document.getElementById('stat-research').textContent = memory.researchResults.length;
+                document.getElementById('stat-code').textContent = memory.codeSolutions.length;
+                document.getElementById('stat-improvements').textContent = memory.improvements.length;
+            } catch (error) {
+                console.error('Memory stats error:', error);
+            }
+        }
+
+        // ============ INITIAL LOAD ============
+        document.addEventListener('DOMContentLoaded', () => {
+            updateMemoryStats();
+            setInterval(updateMemoryStats, 5000); // Auto-update every 5s
+        });
+
+        // ============ ENTER KEY SUPPORT ============
+        document.getElementById('userInput').addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                sendRequest();
+            }
+        });
+    </script>
+</body>
+  </html>
